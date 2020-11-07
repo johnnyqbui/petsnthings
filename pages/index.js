@@ -6,9 +6,10 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { authenticate, AuthSelector } from '../slices/auth'	
 import { setCurrentLocation, CurrentLocationSelector } from '../slices/currentLocation'	
-import { getPets, PetsSelector } from '../slices/pets'	
+import { fetchPets, PetsSelector } from '../slices/pets'	
 
 import SearchBar from '../components/SearchBar'
+import Grid from '../components/Grid'
 
 // export async function getStaticProps() {
 //   // Call an external API endpoint to get posts.
@@ -26,18 +27,18 @@ import SearchBar from '../components/SearchBar'
 
 export default function Home() {
   const dispatch = useDispatch()
-  const {loading, hasErrors, authData} = useSelector(AuthSelector)	
-  const {currentLocation} = useSelector(CurrentLocationSelector)	
-  
+  const { loading, hasErrors, authData } = useSelector(AuthSelector)	
+  const { currentLocation } = useSelector(CurrentLocationSelector)	
+  const {loading: petsLoading, petsData} = useSelector(PetsSelector)	
+
   console.log({loading, hasErrors, authData})
   console.log({currentLocation})
-  // const { petsData, petsLoading } = useSelector(PetsSelector)	
 
-  // console.log(petsData.animals);
+  console.log({petsLoading, petsData});
 
   useEffect(() => {
     dispatch(authenticate())
-}, [dispatch])
+  }, [dispatch])
 
 
   return (
@@ -56,23 +57,10 @@ export default function Home() {
           onSubmit={(submittedLocation) => {
             console.log('submit', submittedLocation)
             dispatch(setCurrentLocation(submittedLocation))
+            dispatch(fetchPets(authData, submittedLocation))
           }}
         />
-{/* 
-        <div className={styles.grid}>
-          {
-            petsData.animals.map(({primary_photo_cropped, size, species}) => 
-            <div className={styles.card} onClick={() => {
-
-            }}>
-              <img 
-                src={primary_photo_cropped && primary_photo_cropped.medium} 
-                alt={`${size} ${species}`} 
-              />
-            </div>
-            )
-          }
-        </div> */}
+        <Grid data={petsData.animals}/>
 
 
         <p className={styles.description}>

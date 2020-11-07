@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-// A slice for currentLocation with our three reducers
+// A slice for currentLocation
 const currentLocationSlice = createSlice({
   name: 'currentLocation',
   initialState: {
