@@ -1,28 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 
-const SearchBar = ({placeholder, onSubmit}) => {
-  const [value, setValue] = useState('');
+const SearchBar = ({
+  placeholder,
+  value,
+  onSubmitInputClick,
+  onSubmitLocationClick
+}) => {
+  const [input, setInput] = useState("");
+
+  useEffect(() => {
+    setInput(value);
+  }, [value]);
 
   return (
     <div>
-      <input type="search" placeholder={placeholder} onChange={(e) => setValue(e.currentTarget.value)}/>
-      <input type="button" value="Submit" onClick={() => {
-        onSubmit(value)
-      }}/>
-      <input type="button" value="Current Location" onClick={() => {
-        navigator.geolocation.getCurrentPosition(success, denied);
+      <input
+        value={input}
+        type="search"
+        placeholder={placeholder}
+        onChange={e => setInput(e.currentTarget.value)}
+      />
+      <input
+        type="button"
+        value="Submit"
+        onClick={() => {
+          onSubmitInputClick(input);
+        }}
+      />
+      <input
+        type="button"
+        value="Current Location"
+        onClick={() => {
+          navigator.geolocation.getCurrentPosition(success, denied);
 
-        function success(info) {
-          const coords = info.coords.latitude + "," + info.coords.longitude;
-          onSubmit(coords)
-        }
-      
-        function denied(info) {
-          console.log(info.message);
-        }
-      }}/>
+          async function success(info) {
+            const coords = info.coords.latitude + "," + info.coords.longitude;
+            onSubmitLocationClick(coords);
+          }
+
+          function denied(info) {
+            console.log(info.message);
+          }
+        }}
+      />
     </div>
-  )
-}
+  );
+};
 
-export default SearchBar
+export default SearchBar;

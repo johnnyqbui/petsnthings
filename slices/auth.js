@@ -6,14 +6,14 @@ const AuthSlice = createSlice({
   initialState: {
     loading: false,
     hasErrors: false,
-    authData: {}
+    data: {}
   },
   reducers: {
     getAuthData: state => {
       state.loading = true;
     },
     authSuccess: (state, { payload }) => {
-      state.authData = payload;
+      state.data = payload;
       state.loading = false;
       state.hasErrors = false;
     },
