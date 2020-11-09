@@ -1,6 +1,9 @@
 import styles from "../styles/Home.module.css";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import GooglePlacesAutocomplete from "react-google-places-autocomplete";
+
+import { Button } from "antd";
 
 // slices
 import { authenticate, AuthSelector } from "../slices/auth";
@@ -12,10 +15,11 @@ import {
 import { fetchPets, PetsSelector } from "../slices/pets";
 
 // components
-import SearchBar from "../components/SearchBar";
 import Grid from "../components/Grid";
 
 export default function Home() {
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+
   const dispatch = useDispatch();
   const {
     loading: authLoading,
@@ -37,25 +41,85 @@ export default function Home() {
     dispatch(authenticate());
   }, [dispatch]);
 
-  console.log({ currentLocationData, currentLocationLoading });
-
   return (
     <main className={styles.main}>
       <h1 className={styles.title}>Welcome to Pets N' Things!</h1>
-      <SearchBar
-        placeholder="Search by City, State, Zip Code"
-        value={currentLocationData}
-        onSubmitLocationClick={coords => {
-          dispatch(reverseGeocode(coords));
-          dispatch(setLocation(coords));
-          dispatch(fetchPets(authData, coords));
+      <div
+        style={{ display: "flex", justifyContent: "center", flexWrap: "wrap" }}
+      >
+        <GooglePlacesAutocomplete
+          apiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY}
+          autocompletionRequest={{
+            componentRestrictions: {
+              country: "us"
+            },
+            types: ["(regions)"]
+          }}
+          selectProps={{
+            isLoading: petsLoading,
+            isClearable: true,
+            placeholder: "Search by City, State, Zip Code",
+            onChange: option => {
+              if (option) {
+                let searchLocation;
+                const isValidZip = option.label.search(/[0-9]{5}/);
+                if (isValidZip > 0) {
+                  searchLocation = option.label
+                    .substring(isValidZip)
+                    .replace(", USA", "");
+                } else {
+                  searchLocation = option.label.replace(", USA", "");
+                }
+
+                dispatch(setLocation(searchLocation));
+                dispatch(fetchPets(authData, searchLocation));
+              }
+            },
+            styles: {
+              container: () => ({
+                width: 500,
+                position: "relative",
+                boxSizing: "border-box"
+              })
+            }
+          }}
+        />
+        <span style={{ margin: 10 }}>OR</span>
+        <Button
+          type="primary"
+          size="large"
+          loading={isLoadingLocation}
+          disabled={isLoadingLocation}
+          onClick={() => {
+            navigator.geolocation.getCurrentPosition(success, denied);
+
+            async function success(info) {
+              const coords = info.coords.latitude + "," + info.coords.longitude;
+              dispatch(reverseGeocode(coords));
+              dispatch(fetchPets(authData, coords));
+              setIsLoadingLocation(false);
+            }
+
+            function denied(info) {
+              console.log(info.message);
+              setIsLoadingLocation(false);
+            }
+            setIsLoadingLocation(true);
+          }}
+        >
+          {`${isLoadingLocation ? "Getting" : "Search By"} Current Location`}
+        </Button>
+      </div>
+
+      <h2
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: 20
         }}
-        onSubmitInputClick={input => {
-          dispatch(setLocation(input));
-          dispatch(fetchPets(authData, input));
-        }}
-      />
-      <Grid data={petsData.animals} loading={currentLocationLoading} />
+      >{`Searching from ${currentLocationData}`}</h2>
+
+      <Grid data={petsData.animals} />
 
       <p className={styles.description}>
         Get started by editing{" "}

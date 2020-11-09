@@ -6,18 +6,18 @@ const currentLocationSlice = createSlice({
   initialState: {
     loading: false,
     hasErrors: false,
-    data: {}
+    data: ""
   },
   reducers: {
-    getLocationName: state => {
+    getLocation: state => {
       state.loading = true;
     },
-    getLocationNameSuccess: (state, { payload }) => {
+    getLocationSuccess: (state, { payload }) => {
       state.data = payload;
       state.loading = false;
       state.hasErrors = false;
     },
-    getLocationNameFailure: state => {
+    getLocationFailure: state => {
       state.loading = false;
       state.hasErrors = true;
     },
@@ -29,9 +29,9 @@ const currentLocationSlice = createSlice({
 
 // Three actions generated from the slice
 export const {
-  getLocationName,
-  getLocationNameSuccess,
-  getLocationNameFailure,
+  getLocation,
+  getLocationSuccess,
+  getLocationFailure,
   setLocation
 } = currentLocationSlice.actions;
 
@@ -42,9 +42,10 @@ export const CurrentLocationSelector = state => state.currentLocation;
 export default currentLocationSlice.reducer;
 
 // Asynchronous thunk action
+// Get postal code based on coordinates
 export function reverseGeocode(coords) {
   return async dispatch => {
-    dispatch(getLocationName());
+    dispatch(getLocation());
 
     try {
       const key = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
@@ -52,16 +53,15 @@ export function reverseGeocode(coords) {
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coords}&key=${key}`
       );
       const response = await reverseGC.json();
-
       const postalCode = response.results
         .filter(({ types }) => types.includes("postal_code"))[0]
         .address_components.filter(({ types }) =>
           types.includes("postal_code")
         )[0].long_name;
 
-      dispatch(getLocationNameSuccess(postalCode));
+      dispatch(getLocationSuccess(postalCode));
     } catch (error) {
-      dispatch(getLocationNameFailure(error));
+      dispatch(getLocationFailure(error));
     }
   };
 }
