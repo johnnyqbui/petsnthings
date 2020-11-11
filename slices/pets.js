@@ -6,7 +6,8 @@ const PetsSlice = createSlice({
   initialState: {
     loading: false,
     hasErrors: false,
-    data: []
+    data: [],
+    selectedPet: {}
   },
   reducers: {
     getPets: state => {
@@ -20,12 +21,20 @@ const PetsSlice = createSlice({
     getPetsFailure: state => {
       state.loading = false;
       state.hasErrors = true;
+    },
+    setSelectedPet: (state, { payload }) => {
+      state.selectedPet = payload;
     }
   }
 });
 
 // Three actions generated from the slice
-const { getPets, getPetsSuccess, getPetsFailure } = PetsSlice.actions;
+const {
+  getPets,
+  getPetsSuccess,
+  getPetsFailure,
+  setSelectedPet
+} = PetsSlice.actions;
 
 // A selector
 export const PetsSelector = state => state.pets;
@@ -56,4 +65,8 @@ export const fetchPets = (authData, location) => async dispatch => {
   } catch (error) {
     dispatch(getPetsFailure());
   }
+};
+
+export const selectPet = selectedPet => dispatch => {
+  dispatch(setSelectedPet(selectedPet));
 };

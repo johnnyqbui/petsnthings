@@ -12,7 +12,7 @@ import {
   setLocation,
   CurrentLocationSelector
 } from "../slices/currentLocation";
-import { fetchPets, PetsSelector } from "../slices/pets";
+import { fetchPets, selectPet, PetsSelector } from "../slices/pets";
 
 // components
 import Grid from "../components/Grid";
@@ -29,7 +29,8 @@ export default function Home() {
   const {
     loading: petsLoading,
     hasErrors: petsErrors,
-    data: petsData
+    data: petsData,
+    selectedPet
   } = useSelector(PetsSelector);
   const {
     loading: currentLocationLoading,
@@ -41,6 +42,7 @@ export default function Home() {
     dispatch(authenticate());
   }, [dispatch]);
 
+  console.log({ selectedPet });
   return (
     <main className={styles.main}>
       <h1 className={styles.title}>Welcome to Pets N' Things!</h1>
@@ -119,7 +121,10 @@ export default function Home() {
         }}
       >{`Searching from ${currentLocationData}`}</h2>
 
-      <Grid data={petsData.animals} />
+      <Grid
+        data={petsData.animals}
+        onClickItem={item => dispatch(selectPet(item))}
+      />
 
       <p className={styles.description}>
         Get started by editing{" "}
